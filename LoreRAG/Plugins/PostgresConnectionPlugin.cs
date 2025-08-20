@@ -1,15 +1,19 @@
+using NexusLabs.Needlr;
+
 using Npgsql;
 using Pgvector.Npgsql;
 using System.Data;
 
 namespace LoreRAG.Plugins;
 
-public class PostgresConnectionPlugin
+public sealed class PostgresConnectionFactory
 {
     private readonly NpgsqlDataSource _dataSource;
-    private readonly ILogger<PostgresConnectionPlugin> _logger;
+    private readonly ILogger<PostgresConnectionFactory> _logger;
 
-    public PostgresConnectionPlugin(IConfiguration configuration, ILogger<PostgresConnectionPlugin> logger)
+    public PostgresConnectionFactory(
+        IConfiguration configuration, 
+        ILogger<PostgresConnectionFactory> logger)
     {
         _logger = logger;
         
@@ -33,15 +37,5 @@ public class PostgresConnectionPlugin
     {
         var connection = await _dataSource.OpenConnectionAsync(ct);
         return connection;
-    }
-}
-
-public static class PostgresConnectionPluginExtensions
-{
-    public static IServiceCollection AddPostgresConnectionPlugin(this IServiceCollection services)
-    {
-        services.AddSingleton<PostgresConnectionPlugin>();
-        services.AddTransient<IDbConnection>(sp => sp.GetRequiredService<PostgresConnectionPlugin>().CreateConnection());
-        return services;
     }
 }

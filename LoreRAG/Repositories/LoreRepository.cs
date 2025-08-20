@@ -1,10 +1,12 @@
 using Dapper;
+
 using LoreRAG.DTOs;
 using LoreRAG.Interfaces;
 using LoreRAG.Models;
 using LoreRAG.Plugins;
+
 using Pgvector;
-using System.Data;
+
 using System.Security.Cryptography;
 using System.Text;
 
@@ -12,12 +14,12 @@ namespace LoreRAG.Repositories;
 
 public class LoreRepository : ILoreRepository
 {
-    private readonly PostgresConnectionPlugin _connectionPlugin;
+    private readonly PostgresConnectionFactory _connectionPlugin;
     private readonly ILogger<LoreRepository> _logger;
 
-    public LoreRepository(PostgresConnectionPlugin connectionPlugin, ILogger<LoreRepository> logger)
+    public LoreRepository(PostgresConnectionFactory connectionFactory, ILogger<LoreRepository> logger)
     {
-        _connectionPlugin = connectionPlugin;
+        _connectionPlugin = connectionFactory;
         _logger = logger;
     }
 
@@ -146,8 +148,7 @@ public class LoreRepository : ILoreRepository
 
     public static string ComputeHash(string content)
     {
-        using var sha256 = SHA256.Create();
-        var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(content));
         return Convert.ToBase64String(hashBytes);
     }
 }

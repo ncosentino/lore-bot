@@ -1,22 +1,41 @@
+using LoreRAG.Configuration;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.Extensions.Options;
-using LoreRAG.Configuration;
+
+using NexusLabs.Needlr;
 
 #pragma warning disable SKEXP0010
 
 namespace LoreRAG.Plugins;
 
-public class SemanticKernelAzureOpenAIPlugin
+internal sealed class SemanticKernelPlugin : IServiceCollectionPlugin
+{
+    public void Configure(ServiceCollectionPluginOptions options)
+    {
+        var configuration = options.Config;
+        options.Services.Configure<ChatConfiguration>(configuration.GetSection(ChatConfiguration.SectionName));
+        options.Services.Configure<EmbeddingConfiguration>(configuration.GetSection(EmbeddingConfiguration.SectionName));
+
+        //options.Services.AddSingleton<SemanticKernelFactory>();
+        options.Services.AddSingleton(sp => sp
+            .GetRequiredService<SemanticKernelFactory>()
+            .GetKernel());
+    }
+}
+
+public sealed class SemanticKernelFactory
 {
     private readonly Kernel _kernel;
-    private readonly ILogger<SemanticKernelAzureOpenAIPlugin> _logger;
+    private readonly ILogger<SemanticKernelFactory> _logger;
 
-    public SemanticKernelAzureOpenAIPlugin(
+    public SemanticKernelFactory(
         IOptions<ChatConfiguration> chatOptions,
         IOptions<EmbeddingConfiguration> embeddingOptions,
-        ILogger<SemanticKernelAzureOpenAIPlugin> logger)
+        ILogger<SemanticKernelFactory> logger)
     {
         _logger = logger;
         var chatConfig = chatOptions.Value;
@@ -80,18 +99,5 @@ public class SemanticKernelAzureOpenAIPlugin
     public Kernel GetKernel() => _kernel;
 }
 
-public static class SemanticKernelAzureOpenAIPluginExtensions
-{
-    public static IServiceCollection AddSemanticKernelAzureOpenAIPlugin(this IServiceCollection services, IConfiguration configuration)
-    {
-        // Configure options from configuration
-        services.Configure<ChatConfiguration>(configuration.GetSection(ChatConfiguration.SectionName));
-        services.Configure<EmbeddingConfiguration>(configuration.GetSection(EmbeddingConfiguration.SectionName));
-        
-        services.AddSingleton<SemanticKernelAzureOpenAIPlugin>();
-        services.AddSingleton(sp => sp.GetRequiredService<SemanticKernelAzureOpenAIPlugin>().GetKernel());
-        return services;
-    }
-}
 
 #pragma warning restore SKEXP0010

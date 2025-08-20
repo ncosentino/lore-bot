@@ -1,20 +1,24 @@
+using NexusLabs.Needlr.AspNet;
+
 using Serilog;
 using Serilog.Events;
 
 namespace LoreRAG.Plugins;
 
-public class SerilogPlugin
+internal sealed class SerilogPlugin :
+    IWebApplicationBuilderPlugin,
+    IWebApplicationPlugin
 {
-    public static void ConfigureSerilog(IConfiguration configuration)
+    public void Configure(WebApplicationBuilderPluginOptions options)
     {
         // Read from the Serilog section in configuration
-        var serilogSection = configuration.GetSection("Serilog");
-        
+        var serilogSection = options.Builder.Configuration.GetSection("Serilog");
+
         var logLevel = serilogSection["MinimumLevel"] ?? "Information";
         var logPath = serilogSection["LogPath"] ?? "logs/app-.log";
 
-        var minimumLevel = Enum.TryParse<LogEventLevel>(logLevel, out var level) 
-            ? level 
+        var minimumLevel = Enum.TryParse<LogEventLevel>(logLevel, out var level)
+            ? level
             : LogEventLevel.Information;
 
         Log.Logger = new LoggerConfiguration()
@@ -35,20 +39,12 @@ public class SerilogPlugin
             .CreateLogger();
 
         Log.Information("Serilog initialized with level {LogLevel} and path {LogPath}", logLevel, logPath);
-    }
-}
 
-public static class SerilogPluginExtensions
-{
-    public static IHostBuilder AddSerilogPlugin(this IHostBuilder hostBuilder)
-    {
-        return hostBuilder.UseSerilog();
+        options.Builder.Host.UseSerilog();
     }
 
-    public static WebApplicationBuilder AddSerilogPlugin(this WebApplicationBuilder builder)
+    public void Configure(WebApplicationPluginOptions options)
     {
-        SerilogPlugin.ConfigureSerilog(builder.Configuration);
-        builder.Host.UseSerilog();
-        return builder;
+        options.WebApplication.UseSerilogRequestLogging();
     }
 }
