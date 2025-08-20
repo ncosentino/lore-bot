@@ -1,28 +1,19 @@
 using Dapper;
 
 using LoreRAG.DTOs;
-using LoreRAG.Interfaces;
-using LoreRAG.Models;
-using LoreRAG.Plugins;
 
 using Pgvector;
 
 using System.Security.Cryptography;
 using System.Text;
 
-namespace LoreRAG.Repositories;
+namespace LoreRAG;
 
-public class LoreRepository : ILoreRepository
+public sealed class LoreRepository(
+    PostgresConnectionFactory _connectionFactory, 
+    ILogger<LoreRepository> _logger) :
+    ILoreRepository
 {
-    private readonly PostgresConnectionFactory _connectionPlugin;
-    private readonly ILogger<LoreRepository> _logger;
-
-    public LoreRepository(PostgresConnectionFactory connectionFactory, ILogger<LoreRepository> logger)
-    {
-        _connectionPlugin = connectionFactory;
-        _logger = logger;
-    }
-
     public async Task<long> InsertAsync(LoreChunk chunk, CancellationToken ct = default)
     {
         const string sql = @"
@@ -35,7 +26,7 @@ public class LoreRepository : ILoreRepository
             )
             RETURNING id;";
 
-        using var connection = await _connectionPlugin.CreateConnectionAsync(ct);
+        using var connection = await _connectionFactory.CreateConnectionAsync(ct);
         
         var id = await connection.QuerySingleAsync<long>(sql, new
         {
@@ -55,7 +46,7 @@ public class LoreRepository : ILoreRepository
         return id;
     }
 
-    public async Task<IReadOnlyList<LoreSearchHitDto>> HybridSearchAsync(
+    public async Task<IReadOnlyList<LoreSearchHit>> HybridSearchAsync(
         Vector queryVec, 
         string queryText, 
         int k, 
@@ -119,9 +110,9 @@ public class LoreRepository : ILoreRepository
             ORDER BY (0.65 * dense_score + 0.35 * COALESCE(sparse_score, 0)) DESC
             LIMIT @K;";
 
-        using var connection = await _connectionPlugin.CreateConnectionAsync(ct);
+        using var connection = await _connectionFactory.CreateConnectionAsync(ct);
         
-        var results = await connection.QueryAsync<LoreSearchHitDto>(sql, new
+        var results = await connection.QueryAsync<LoreSearchHit>(sql, new
         {
             QueryVec = queryVec,
             QueryText = queryText,
@@ -142,7 +133,7 @@ public class LoreRepository : ILoreRepository
                 WHERE content = @ContentHash
             );";
 
-        using var connection = await _connectionPlugin.CreateConnectionAsync(ct);
+        using var connection = await _connectionFactory.CreateConnectionAsync(ct);
         return await connection.QuerySingleAsync<bool>(sql, new { ContentHash = contentHash });
     }
 

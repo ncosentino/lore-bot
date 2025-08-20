@@ -1,23 +1,20 @@
 using LoreRAG.DTOs;
-using LoreRAG.Interfaces;
+
 using Microsoft.AspNetCore.Mvc;
+
 using System.ComponentModel.DataAnnotations;
 
-namespace LoreRAG.Controllers;
+namespace LoreRAG;
 
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class LoreController : ControllerBase
+public class LoreController(
+    ILoreRetriever _retriever, 
+    SemanticKernelFactory _kernelFactory,
+    ILogger<LoreController> _logger) : 
+    ControllerBase
 {
-    private readonly ILoreRetriever _retriever;
-    private readonly ILogger<LoreController> _logger;
-
-    public LoreController(ILoreRetriever retriever, ILogger<LoreController> logger)
-    {
-        _retriever = retriever;
-        _logger = logger;
-    }
 
     /// <summary>
     /// Look up relevant information from the lore knowledge base
@@ -61,7 +58,8 @@ public class LoreController : ControllerBase
         try
         {
             _logger.LogInformation("Processing lookup query: {Query} with k={K}", q, k);
-            var response = await _retriever.LookupAsync(q, k);
+            var kernel = _kernelFactory.Build();
+            var response = await _retriever.LookupAsync(kernel, q, k);
             
             _logger.LogInformation("Successfully processed lookup with {Count} results", response.Hits.Count);
             return Ok(response);
@@ -120,7 +118,8 @@ public class LoreController : ControllerBase
         try
         {
             _logger.LogInformation("Processing question: {Question} with k={K}", q, k);
-            var response = await _retriever.AskAsync(q, k);
+            var kernel = _kernelFactory.Build();
+            var response = await _retriever.AskAsync(kernel, q, k);
             
             _logger.LogInformation("Successfully generated answer for question");
             return Ok(response);

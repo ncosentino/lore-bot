@@ -3,7 +3,7 @@ using NexusLabs.Needlr.AspNet;
 using Serilog;
 using Serilog.Events;
 
-namespace LoreRAG.Plugins;
+namespace LoreRAG;
 
 internal sealed class SerilogPlugin :
     IWebApplicationBuilderPlugin,

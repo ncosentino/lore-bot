@@ -1,10 +1,8 @@
 using Dapper;
 
-using LoreRAG.Infrastructure.TypeHandlers;
-
 using NexusLabs.Needlr;
 
-namespace LoreRAG.Plugins;
+namespace LoreRAG;
 
 internal sealed class TypeHandlerPlugin : IServiceCollectionPlugin
 {

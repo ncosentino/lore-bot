@@ -5,8 +5,8 @@ public class ChatConfiguration
     public const string SectionName = "Chat";
     
     public string Provider { get; set; } = "azure-openai";
-    public AzureOpenAIConfig? AzureOpenAI { get; set; }
-    public OpenAIConfig? OpenAI { get; set; }
+    public AzureOpenAIChatConfig? AzureOpenAI { get; set; }
+    public OpenAIChatConfig? OpenAI { get; set; }
     
     public void Validate()
     {
@@ -28,7 +28,7 @@ public class ChatConfiguration
     }
 }
 
-public class AzureOpenAIConfig
+public class AzureOpenAIChatConfig
 {
     public string Endpoint { get; set; } = string.Empty;
     public string Key { get; set; } = string.Empty;
@@ -47,7 +47,7 @@ public class AzureOpenAIConfig
     }
 }
 
-public class OpenAIConfig
+public class OpenAIChatConfig
 {
     public string ApiKey { get; set; } = string.Empty;
     public string Model { get; set; } = "gpt-4o";

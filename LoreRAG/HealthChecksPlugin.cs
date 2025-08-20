@@ -11,11 +11,11 @@ internal sealed class HealthChecksPlugin :
 {
     public void Configure(WebApplicationBuilderPluginOptions options)
     {
-        // Add health checks
         options.Builder.Services.AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy())
             .AddCheck<DatabaseHealthCheck>("database", tags: new[] { "db", "postgres" })
-            .AddCheck<EmbeddingHealthCheck>("embeddings", tags: new[] { "ai", "embeddings" });
+            .AddCheck<EmbeddingHealthCheck>("embeddings", tags: new[] { "ai", "embeddings" })
+            ;
     }
 
     public void Configure(WebApplicationPluginOptions options)

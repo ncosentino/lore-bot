@@ -1,6 +1,0 @@
-@LoreRAG_HostAddress = http://localhost:5022
-
-GET {{LoreRAG_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

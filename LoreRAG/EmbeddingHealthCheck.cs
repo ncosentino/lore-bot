@@ -1,19 +1,15 @@
-using LoreRAG.Interfaces;
+using LoreRAG;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NexusLabs.Needlr;
 
 [DoNotAutoRegister]
-public class EmbeddingHealthCheck : IHealthCheck
+public sealed class EmbeddingHealthCheck(
+    IEmbeddingService embeddingService,
+    SemanticKernelFactory _semanticKernelFactory) :
+    IHealthCheck
 {
-    private readonly IEmbeddingService _embeddingService;
-    
-    public EmbeddingHealthCheck(IEmbeddingService embeddingService)
-    {
-        _embeddingService = embeddingService;
-    }
-    
     public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context, 
         CancellationToken cancellationToken = default)
@@ -21,7 +17,8 @@ public class EmbeddingHealthCheck : IHealthCheck
         try
         {
             var testText = "health check";
-            var embedding = await _embeddingService.EmbedAsync(testText, cancellationToken);
+            var kernel = _semanticKernelFactory.Build();
+            var embedding = await embeddingService.EmbedAsync(kernel, testText, cancellationToken);
             
             if (embedding != null && embedding.ToArray().Length > 0)
             {

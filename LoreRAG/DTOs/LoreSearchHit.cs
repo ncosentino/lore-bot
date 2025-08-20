@@ -1,6 +1,6 @@
 namespace LoreRAG.DTOs;
 
-public sealed record LoreSearchHitDto(
+public sealed record LoreSearchHit(
     long Id,
     string SourcePath,
     string? AnchorId,

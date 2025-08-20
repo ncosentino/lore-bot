@@ -1,4 +1,4 @@
-using LoreRAG.Plugins;
+using LoreRAG;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 

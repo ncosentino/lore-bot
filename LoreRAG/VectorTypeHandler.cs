@@ -1,10 +1,12 @@
 using Dapper;
+
 using Pgvector;
+
 using System.Data;
 
-namespace LoreRAG.Infrastructure.TypeHandlers;
+namespace LoreRAG;
 
-public class VectorTypeHandler : SqlMapper.TypeHandler<Vector>
+public sealed class VectorTypeHandler : SqlMapper.TypeHandler<Vector>
 {
     public override Vector Parse(object value)
     {

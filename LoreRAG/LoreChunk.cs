@@ -1,6 +1,6 @@
 using Pgvector;
 
-namespace LoreRAG.Models;
+namespace LoreRAG;
 
 public class LoreChunk
 {

@@ -1,31 +1,23 @@
 using LoreRAG.Configuration;
-using LoreRAG.Interfaces;
+
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
+
 using Pgvector;
 
 #pragma warning disable SKEXP0001
 
-namespace LoreRAG.Services;
+namespace LoreRAG;
 
-public class EmbeddingService : IEmbeddingService
+public sealed class EmbeddingService(
+    ILogger<EmbeddingService> _logger) : 
+    IEmbeddingService
 {
-    private readonly Kernel _kernel;
-    private readonly ITextEmbeddingGenerationService _embeddingService;
-    private readonly ILogger<EmbeddingService> _logger;
-    private readonly int _embeddingDimensions;
-
-    public EmbeddingService(Kernel kernel, IOptions<EmbeddingConfiguration> options, ILogger<EmbeddingService> logger)
-    {
-        _kernel = kernel;
-        _logger = logger;
-        _embeddingDimensions = options.Value.Dimensions;
-        
-        _embeddingService = _kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-    }
-
-    public async Task<Vector> EmbedAsync(string text, CancellationToken ct = default)
+    public async Task<Vector> EmbedAsync(
+        Kernel kernel,
+        string text, 
+        CancellationToken ct = default)
     {
         // Validate input
         if (string.IsNullOrWhiteSpace(text))
@@ -41,14 +33,18 @@ public class EmbeddingService : IEmbeddingService
         var estimatedTokens = text.Length / 4;
         if (estimatedTokens > maxTokens)
         {
-            _logger.LogError("Text exceeds maximum token limit. Estimated tokens: {EstimatedTokens}, Max: {MaxTokens}, Text length: {Length}", 
-                estimatedTokens, maxTokens, text.Length);
+            _logger.LogError(
+                "Text exceeds maximum token limit. Estimated tokens: {EstimatedTokens}, Max: {MaxTokens}, Text length: {Length}", 
+                estimatedTokens, 
+                maxTokens, 
+                text.Length);
             throw new ArgumentException($"Text is too long for embedding. Estimated {estimatedTokens} tokens exceeds limit of {maxTokens}", nameof(text));
         }
         
         try
         {
-            var embeddings = await _embeddingService.GenerateEmbeddingAsync(text, _kernel, ct);
+            var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+            var embeddings = await embeddingService.GenerateEmbeddingAsync(text, kernel, ct);
             var floatArray = embeddings.ToArray();
             
             _logger.LogDebug("Generated embedding with {Dimensions} dimensions for text of length {Length}", 

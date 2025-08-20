@@ -3,6 +3,6 @@ namespace LoreRAG.DTOs;
 public sealed record LoreAnswerResponse(
     string Question,
     string Answer,
-    IReadOnlyList<LoreSearchHitDto> Sources,
+    IReadOnlyList<LoreSearchHit> Sources,
     DateTimeOffset GeneratedAtUtc
 );

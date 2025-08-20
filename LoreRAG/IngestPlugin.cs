@@ -1,3 +1,4 @@
+using LoreRAG;
 using LoreRAG.Ingestion;
 
 using NexusLabs.Needlr.AspNet;
@@ -8,11 +9,17 @@ internal sealed class IngestPlugin : IWebApplicationPlugin
 {
     public void Configure(WebApplicationPluginOptions options)
     {
-        options.WebApplication.MapPost("/api/ingest", async (string path, IngestionService ingestionService) =>
+        options.WebApplication.MapPost(
+            "/api/ingest", 
+            async (
+                string path, 
+                IngestionService ingestionService,
+                SemanticKernelFactory semanticKernelFactory) =>
         {
             try
             {
-                var result = await ingestionService.IngestDirectoryAsync(path);
+                var kernel = semanticKernelFactory.Build();
+                var result = await ingestionService.IngestDirectoryAsync(kernel, path);
                 return Results.Ok(result);
             }
             catch (Exception ex)

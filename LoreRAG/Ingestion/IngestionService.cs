@@ -1,31 +1,21 @@
-using LoreRAG.Interfaces;
-using LoreRAG.Repositories;
+using Microsoft.SemanticKernel;
+
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace LoreRAG.Ingestion;
 
-public class IngestionService
+public sealed class IngestionService(
+    ILoreRepository _repository,
+    IEmbeddingService _embeddingService,
+    MarkdownChunker _chunker,
+    ILogger<IngestionService> _logger)
 {
-    private readonly ILoreRepository _repository;
-    private readonly IEmbeddingService _embeddingService;
-    private readonly MarkdownChunker _chunker;
-    private readonly ILogger<IngestionService> _logger;
-
-    public IngestionService(
-        ILoreRepository repository,
-        IEmbeddingService embeddingService,
-        MarkdownChunker chunker,
-        ILogger<IngestionService> logger)
-    {
-        _repository = repository;
-        _embeddingService = embeddingService;
-        _chunker = chunker;
-        _logger = logger;
-    }
-
-    public async Task<IngestionResult> IngestDirectoryAsync(string directoryPath, CancellationToken ct = default)
+    public async Task<IngestionResult> IngestDirectoryAsync(
+        Kernel kernel,
+        string directoryPath, 
+        CancellationToken ct = default)
     {
         var result = new IngestionResult();
         var stopwatch = Stopwatch.StartNew();
@@ -43,7 +33,7 @@ public class IngestionService
         {
             try
             {
-                var fileResult = await IngestFileAsync(filePath, ct);
+                var fileResult = await IngestFileAsync(kernel, filePath, ct);
                 result.FilesProcessed++;
                 result.ChunksCreated += fileResult.ChunksCreated;
                 result.ChunksSkipped += fileResult.ChunksSkipped;
@@ -65,7 +55,10 @@ public class IngestionService
         return result;
     }
 
-    public async Task<FileIngestionResult> IngestFileAsync(string filePath, CancellationToken ct = default)
+    public async Task<FileIngestionResult> IngestFileAsync(
+        Kernel kernel,
+        string filePath, 
+        CancellationToken ct = default)
     {
         var result = new FileIngestionResult { FilePath = filePath };
         _logger.LogInformation("Ingesting file: {FilePath}", filePath);
@@ -101,7 +94,7 @@ public class IngestionService
             // Generate embedding
             try
             {
-                chunk.Embedding = await _embeddingService.EmbedAsync(chunk.Content, ct);
+                chunk.Embedding = await _embeddingService.EmbedAsync(kernel, chunk.Content, ct);
                 
                 // Insert chunk
                 var id = await _repository.InsertAsync(chunk, ct);

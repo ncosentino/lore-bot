@@ -1,10 +1,8 @@
-using NexusLabs.Needlr;
-
 using Npgsql;
-using Pgvector.Npgsql;
+
 using System.Data;
 
-namespace LoreRAG.Plugins;
+namespace LoreRAG;
 
 public sealed class PostgresConnectionFactory
 {

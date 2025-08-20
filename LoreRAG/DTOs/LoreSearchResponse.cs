@@ -2,6 +2,6 @@ namespace LoreRAG.DTOs;
 
 public sealed record LoreSearchResponse(
     string Question,
-    IReadOnlyList<LoreSearchHitDto> Hits,
+    IReadOnlyList<LoreSearchHit> Hits,
     DateTimeOffset GeneratedAtUtc
 );
