@@ -3,6 +3,8 @@ using LoreRAG.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 
+using NexusLabs.Needlr;
+
 namespace LoreRAG;
 
 public sealed class SemanticKernelFactory(
@@ -11,17 +13,27 @@ public sealed class SemanticKernelFactory(
     IServiceProvider _serviceProvider,
     ILogger<SemanticKernelFactory> _logger)
 {
-    public Kernel Build()
+    private readonly Lazy<IKernelBuilder> _lazyKernelBuilder = new(() =>
     {
         // Validate configuration
         var chatConfig = _chatOptions.Value;
         chatConfig.Validate();
-        
+
         var embeddingConfig = _embeddingOptions.Value;
         embeddingConfig.Validate();
 
         var builder = Kernel.CreateBuilder();
         builder.AddLoreFunctions(_serviceProvider);
+
+        // FIXME: update this to use the latest Needlr API so that
+        // we have better access to these service descriptors
+        foreach (var d in _serviceProvider.GetServiceRegistrations(x =>
+        {
+            builder.Services.Add(x);
+            return true;
+        }))
+        {
+        }
 
         // Add Chat Completion based on provider
         switch (chatConfig.Provider?.ToLower())
@@ -71,6 +83,12 @@ public sealed class SemanticKernelFactory(
 #pragma warning restore SKEXP0010
         }
 
+        return builder;
+    });
+
+    public Kernel Build()
+    {
+        var builder = _lazyKernelBuilder.Value;
         var kernel = builder.Build();
         return kernel;
     }

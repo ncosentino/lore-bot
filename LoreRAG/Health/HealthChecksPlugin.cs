@@ -5,7 +5,9 @@ using NexusLabs.Needlr.AspNet;
 
 using System.Text.Json;
 
-internal sealed class HealthChecksPlugin : 
+namespace LoreRAG.Health;
+
+internal sealed class HealthChecksPlugin :
     IWebApplicationBuilderPlugin,
     IWebApplicationPlugin
 {

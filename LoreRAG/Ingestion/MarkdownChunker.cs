@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace LoreRAG.Ingestion;
 
-public class MarkdownChunker
+public sealed class MarkdownChunker
 {
     private readonly int _targetTokens;
     private readonly int _overlapTokens;
@@ -106,69 +106,68 @@ public class MarkdownChunker
         {
             // Section fits in one chunk
             chunks.Add(CreateChunk(filePath, section, content));
+            return chunks;
         }
-        else
+
+        // Split section into multiple chunks
+        var paragraphs = SplitIntoParagraphs(content);
+        var currentChunkContent = new StringBuilder();
+        var currentTokens = 0;
+
+        foreach (var paragraph in paragraphs)
         {
-            // Split section into multiple chunks
-            var paragraphs = SplitIntoParagraphs(content);
-            var currentChunkContent = new StringBuilder();
-            var currentTokens = 0;
-            
-            foreach (var paragraph in paragraphs)
+            var paragraphTokens = paragraph.Length / 4;
+
+            // If a single paragraph exceeds max tokens, split it further
+            if (paragraphTokens > _maxTokens)
             {
-                var paragraphTokens = paragraph.Length / 4;
-                
-                // If a single paragraph exceeds max tokens, split it further
-                if (paragraphTokens > _maxTokens)
+                // Flush current chunk if not empty
+                if (currentChunkContent.Length > 0)
                 {
-                    // Flush current chunk if not empty
-                    if (currentChunkContent.Length > 0)
-                    {
-                        chunks.Add(CreateChunk(filePath, section, currentChunkContent.ToString().Trim()));
-                        currentChunkContent.Clear();
-                        currentTokens = 0;
-                    }
-                    
-                    // Split large paragraph by sentences or at max token boundaries
-                    var splitParagraphs = SplitLargeParagraph(paragraph, _targetTokens);
-                    foreach (var splitPara in splitParagraphs)
-                    {
-                        chunks.Add(CreateChunk(filePath, section, splitPara.Trim()));
-                    }
-                    continue;
-                }
-                
-                // Check if adding this paragraph would exceed target (or max) tokens
-                if ((currentTokens + paragraphTokens > _targetTokens && currentChunkContent.Length > 0) ||
-                    (currentTokens + paragraphTokens > _maxTokens))
-                {
-                    // Create chunk and start new one with overlap
                     chunks.Add(CreateChunk(filePath, section, currentChunkContent.ToString().Trim()));
-                    
-                    // Start new chunk with overlap from previous
                     currentChunkContent.Clear();
                     currentTokens = 0;
-                    
-                    // Add overlap from previous chunk if applicable
-                    if (_overlapTokens > 0 && chunks.Count > 0)
-                    {
-                        var overlapText = GetOverlapText(chunks.Last().Content, _overlapTokens);
-                        currentChunkContent.AppendLine(overlapText);
-                        currentTokens = overlapText.Length / 4;
-                    }
                 }
-                
-                currentChunkContent.AppendLine(paragraph);
-                currentTokens += paragraphTokens;
+
+                // Split large paragraph by sentences or at max token boundaries
+                var splitParagraphs = SplitLargeParagraph(paragraph, _targetTokens);
+                foreach (var splitPara in splitParagraphs)
+                {
+                    chunks.Add(CreateChunk(filePath, section, splitPara.Trim()));
+                }
+                continue;
             }
-            
-            // Add remaining content
-            if (currentChunkContent.Length > 0)
+
+            // Check if adding this paragraph would exceed target (or max) tokens
+            if ((currentTokens + paragraphTokens > _targetTokens && currentChunkContent.Length > 0) ||
+                (currentTokens + paragraphTokens > _maxTokens))
             {
+                // Create chunk and start new one with overlap
                 chunks.Add(CreateChunk(filePath, section, currentChunkContent.ToString().Trim()));
+
+                // Start new chunk with overlap from previous
+                currentChunkContent.Clear();
+                currentTokens = 0;
+
+                // Add overlap from previous chunk if applicable
+                if (_overlapTokens > 0 && chunks.Count > 0)
+                {
+                    var overlapText = GetOverlapText(chunks.Last().Content, _overlapTokens);
+                    currentChunkContent.AppendLine(overlapText);
+                    currentTokens = overlapText.Length / 4;
+                }
             }
+
+            currentChunkContent.AppendLine(paragraph);
+            currentTokens += paragraphTokens;
         }
-        
+
+        // Add remaining content
+        if (currentChunkContent.Length > 0)
+        {
+            chunks.Add(CreateChunk(filePath, section, currentChunkContent.ToString().Trim()));
+        }
+
         return chunks;
     }
 

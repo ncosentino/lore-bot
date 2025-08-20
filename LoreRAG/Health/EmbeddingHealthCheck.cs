@@ -4,6 +4,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NexusLabs.Needlr;
 
+namespace LoreRAG.Health;
+
 [DoNotAutoRegister]
 public sealed class EmbeddingHealthCheck(
     IEmbeddingService embeddingService,
@@ -11,7 +13,7 @@ public sealed class EmbeddingHealthCheck(
     IHealthCheck
 {
     public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context, 
+        HealthCheckContext context,
         CancellationToken cancellationToken = default)
     {
         try
@@ -19,12 +21,12 @@ public sealed class EmbeddingHealthCheck(
             var testText = "health check";
             var kernel = _semanticKernelFactory.Build();
             var embedding = await embeddingService.EmbedAsync(kernel, testText, cancellationToken);
-            
+
             if (embedding != null && embedding.ToArray().Length > 0)
             {
                 return HealthCheckResult.Healthy("Embedding service is healthy");
             }
-            
+
             return HealthCheckResult.Degraded("Embedding service returned empty result");
         }
         catch (Exception ex)

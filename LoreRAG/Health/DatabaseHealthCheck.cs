@@ -4,18 +4,20 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NexusLabs.Needlr;
 
+namespace LoreRAG.Health;
+
 [DoNotAutoRegister]
 public class DatabaseHealthCheck : IHealthCheck
 {
     private readonly PostgresConnectionFactory _connectionPlugin;
-    
+
     public DatabaseHealthCheck(PostgresConnectionFactory connectionPlugin)
     {
         _connectionPlugin = connectionPlugin;
     }
-    
+
     public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context, 
+        HealthCheckContext context,
         CancellationToken cancellationToken = default)
     {
         try
@@ -24,7 +26,7 @@ public class DatabaseHealthCheck : IHealthCheck
             using var command = connection.CreateCommand();
             command.CommandText = "SELECT 1";
             command.ExecuteScalar();
-            
+
             return HealthCheckResult.Healthy("Database connection is healthy");
         }
         catch (Exception ex)
