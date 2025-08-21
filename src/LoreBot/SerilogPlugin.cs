@@ -1,14 +1,17 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 using NexusLabs.Needlr;
 
 using Serilog;
 using Serilog.Events;
+using Serilog.Extensions.Logging;
 
 namespace LoreBot;
 
-internal sealed class SerilogPlugin : IPostBuildServiceCollectionPlugin
+internal sealed class SerilogPlugin : IServiceCollectionPlugin
 {
-
-    public void Configure(PostBuildServiceCollectionPluginOptions options)
+    public void Configure(ServiceCollectionPluginOptions options)
     {
         var serilogSection = options.Config.GetSection("Serilog");
 
@@ -41,5 +44,14 @@ internal sealed class SerilogPlugin : IPostBuildServiceCollectionPlugin
             .CreateLogger();
 
         Log.Information("Serilog initialized with level {LogLevel} and path {LogPath}", logLevel, logPath);
+
+        options.Services.AddSerilog(logger: Log.Logger);
+        options.Services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+        options.Services.AddSingleton<SerilogLoggerFactory>(provider =>
+        {
+            var serilogLogger = provider.GetRequiredService<global::Serilog.ILogger>();
+            return new SerilogLoggerFactory(serilogLogger);
+        });
+        options.Services.AddSingleton<ILoggerFactory>(provider => provider.GetRequiredService<SerilogLoggerFactory>());
     }
 }

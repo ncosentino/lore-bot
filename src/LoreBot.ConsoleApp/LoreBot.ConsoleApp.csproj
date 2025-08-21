@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="NexusLabs.Needlr.Injection" />
+    <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
   <ItemGroup>
