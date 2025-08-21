@@ -26,14 +26,9 @@ public sealed class SemanticKernelFactory(
         var builder = Kernel.CreateBuilder();
         builder.AddLoreFunctions(_serviceProvider);
 
-        // FIXME: update this to use the latest Needlr API so that
-        // we have better access to these service descriptors
-        foreach (var d in _serviceProvider.GetServiceRegistrations(x =>
+        foreach (var registration in _serviceProvider.GetServiceRegistrations(x => true))
         {
-            builder.Services.Add(x);
-            return true;
-        }))
-        {
+            builder.Services.Add(registration.ServiceDescriptor);
         }
 
         // Add Chat Completion based on provider
