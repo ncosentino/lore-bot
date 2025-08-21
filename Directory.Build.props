@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Nexus Software Labs</Authors>
+    <Company>Nexus Software Labs</Company>
+    <Product>LoreBot</Product>
+    <Copyright>Copyright © Nexus Software Labs 2025</Copyright>
+  </PropertyGroup>
+</Project>

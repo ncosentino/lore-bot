@@ -1,15 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="NexusLabs.Needlr.AspNet" Version="0.0.1-alpha-0017" />
-	<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
-	<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="NexusLabs.Needlr.AspNet" />
+	<PackageReference Include="Swashbuckle.AspNetCore" />
+	<PackageReference Include="Serilog.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>
