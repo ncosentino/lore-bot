@@ -70,7 +70,10 @@ public class LoreRetriever(
 
                 Question: {question}
 
-                Please provide a comprehensive answer based on the context above. If the context doesn't contain enough information to fully answer the question, indicate what information is missing. Always cite which sources you're using for your answer.
+                Provide a comprehensive answer based on the context above. If the context doesn't contain enough information to fully answer the question, indicate what information is missing.
+                
+                ALWAYS cite which sources you're using for your answer.
+                NEVER ask follow up questions.
                 """;
 
         var chatService = kernel.GetRequiredService<IChatCompletionService>();
