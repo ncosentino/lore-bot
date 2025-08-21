@@ -5,6 +5,7 @@
 	<PackageReference Include="Dapper" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	<PackageReference Include="Microsoft.SemanticKernel" />
+	<PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" />
 	<PackageReference Include="Npgsql" />
 	<PackageReference Include="Pgvector" />
 	<PackageReference Include="Serilog.Enrichers.Environment" />

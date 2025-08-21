@@ -56,6 +56,16 @@ public sealed class SemanticKernelFactory(
                 _logger.LogInformation("Configured OpenAI chat with model: {Model}",
                     chatConfig.OpenAI.Model);
                 break;
+            case "ollama":
+#pragma warning disable SKEXP0070
+                builder.AddOllamaChatCompletion(
+                    modelId: chatConfig.Ollama!.Model,
+                    endpoint: new Uri(chatConfig.Ollama.Endpoint)
+                );
+#pragma warning restore SKEXP0070
+                _logger.LogInformation("Configured Ollama chat with model: {Model} at endpoint: {Endpoint}",
+                    chatConfig.Ollama.Model, chatConfig.Ollama.Endpoint);
+                break;
         }
 
         // Add Text Embeddings based on provider
@@ -80,6 +90,34 @@ public sealed class SemanticKernelFactory(
                 );
                 _logger.LogInformation("Configured OpenAI embeddings with model: {Model}, dimensions: {Dimensions}",
                     embeddingConfig.OpenAI.Model, embeddingConfig.Dimensions);
+                break;
+            case "ollama":
+#pragma warning disable SKEXP0070
+                builder.AddOllamaTextEmbeddingGeneration(
+                    modelId: embeddingConfig.Ollama!.Model,
+                    endpoint: new Uri(embeddingConfig.Ollama.Endpoint)
+                );
+#pragma warning restore SKEXP0070
+                
+                // Validate dimensions for known Ollama models
+                var expectedDimensions = embeddingConfig.Ollama.Model.ToLower() switch
+                {
+                    "nomic-embed-text" => 768,
+                    "mxbai-embed-large" => 1024,
+                    "all-minilm" => 384,
+                    _ => embeddingConfig.Dimensions
+                };
+                
+                if (expectedDimensions != embeddingConfig.Dimensions)
+                {
+                    _logger.LogWarning(
+                        "Dimension mismatch: Model '{Model}' produces {ExpectedDimensions} dimensions, but config specifies {ConfigDimensions}. " +
+                        "This may cause errors if existing vectors have different dimensions.",
+                        embeddingConfig.Ollama.Model, expectedDimensions, embeddingConfig.Dimensions);
+                }
+                
+                _logger.LogInformation("Configured Ollama embeddings with model: {Model} at endpoint: {Endpoint}, dimensions: {Dimensions}",
+                    embeddingConfig.Ollama.Model, embeddingConfig.Ollama.Endpoint, embeddingConfig.Dimensions);
                 break;
 #pragma warning restore SKEXP0010
         }

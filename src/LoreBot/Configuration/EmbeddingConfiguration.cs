@@ -11,6 +11,7 @@ public class EmbeddingConfiguration
     public int OverlapTokens { get; set; } = 75;
     public AzureOpenAIEmbeddingConfig? AzureOpenAI { get; set; }
     public OpenAIEmbeddingConfig? OpenAI { get; set; }
+    public OllamaEmbeddingConfig? Ollama { get; set; }
     
     public void Validate()
     {
@@ -41,8 +42,13 @@ public class EmbeddingConfiguration
                     throw new InvalidOperationException("OpenAI configuration is required when Provider is 'openai'");
                 OpenAI.Validate();
                 break;
+            case "ollama":
+                if (Ollama == null)
+                    throw new InvalidOperationException("Ollama configuration is required when Provider is 'ollama'");
+                Ollama.Validate();
+                break;
             default:
-                throw new InvalidOperationException($"Invalid embedding provider: {Provider}. Supported: azure-openai, openai");
+                throw new InvalidOperationException($"Invalid embedding provider: {Provider}. Supported: azure-openai, openai, ollama");
         }
     }
 }
@@ -78,5 +84,26 @@ public class OpenAIEmbeddingConfig
         
         if (string.IsNullOrWhiteSpace(Model))
             throw new InvalidOperationException("OpenAI Embedding Model is required");
+    }
+}
+
+public class OllamaEmbeddingConfig
+{
+    public string Endpoint { get; set; } = "http://localhost:11434";
+    public string Model { get; set; } = "nomic-embed-text";
+    
+    public void Validate()
+    {
+        if (string.IsNullOrWhiteSpace(Endpoint))
+            throw new InvalidOperationException("Ollama Embedding Endpoint is required");
+        
+        if (string.IsNullOrWhiteSpace(Model))
+            throw new InvalidOperationException("Ollama Embedding Model is required");
+        
+        if (!Uri.TryCreate(Endpoint, UriKind.Absolute, out _))
+            throw new InvalidOperationException($"Ollama Embedding Endpoint '{Endpoint}' is not a valid URI");
+        
+        // Note: nomic-embed-text produces 768-dimensional vectors
+        // mxbai-embed-large produces 1024-dimensional vectors
     }
 }

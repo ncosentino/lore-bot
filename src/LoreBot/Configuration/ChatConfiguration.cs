@@ -7,6 +7,7 @@ public class ChatConfiguration
     public string Provider { get; set; } = "azure-openai";
     public AzureOpenAIChatConfig? AzureOpenAI { get; set; }
     public OpenAIChatConfig? OpenAI { get; set; }
+    public OllamaChatConfig? Ollama { get; set; }
     
     public void Validate()
     {
@@ -22,8 +23,13 @@ public class ChatConfiguration
                     throw new InvalidOperationException("OpenAI configuration is required when Provider is 'openai'");
                 OpenAI.Validate();
                 break;
+            case "ollama":
+                if (Ollama == null)
+                    throw new InvalidOperationException("Ollama configuration is required when Provider is 'ollama'");
+                Ollama.Validate();
+                break;
             default:
-                throw new InvalidOperationException($"Invalid chat provider: {Provider}. Supported: azure-openai, openai");
+                throw new InvalidOperationException($"Invalid chat provider: {Provider}. Supported: azure-openai, openai, ollama");
         }
     }
 }
@@ -59,5 +65,23 @@ public class OpenAIChatConfig
         
         if (string.IsNullOrWhiteSpace(Model))
             throw new InvalidOperationException("OpenAI Model is required");
+    }
+}
+
+public class OllamaChatConfig
+{
+    public string Endpoint { get; set; } = "http://localhost:11434";
+    public string Model { get; set; } = "llama3.2";
+    
+    public void Validate()
+    {
+        if (string.IsNullOrWhiteSpace(Endpoint))
+            throw new InvalidOperationException("Ollama Endpoint is required");
+        
+        if (string.IsNullOrWhiteSpace(Model))
+            throw new InvalidOperationException("Ollama Model is required");
+        
+        if (!Uri.TryCreate(Endpoint, UriKind.Absolute, out _))
+            throw new InvalidOperationException($"Ollama Endpoint '{Endpoint}' is not a valid URI");
     }
 }
