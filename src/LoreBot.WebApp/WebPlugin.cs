@@ -15,7 +15,7 @@ internal sealed class WebPlugin :
         {
             c.SwaggerDoc("v1", new()
             {
-                Title = "LoreRAG API",
+                Title = "LoreBot API",
                 Version = "v1",
                 Description = "Retrieval-Augmented Generation system for game lore knowledge base"
             });
@@ -42,7 +42,7 @@ internal sealed class WebPlugin :
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "LoreRAG API v1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "LoreBot API v1");
                 c.RoutePrefix = string.Empty;
             });
         }

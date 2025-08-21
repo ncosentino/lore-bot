@@ -1,4 +1,3 @@
-using LoreBot;
 using LoreBot.DTOs;
 
 using Microsoft.SemanticKernel;
@@ -6,7 +5,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 using System.Text;
 
-namespace LoreRAG;
+namespace LoreBot;
 
 public class LoreRetriever(
     ILoreRepository _repository,
